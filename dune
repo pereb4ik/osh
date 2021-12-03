@@ -4,7 +4,7 @@
 
 (menhir
   (modules parser)
-  (flags -la 2 -lc 2 --comment --dump-resolved)
+  (flags --comment -la 2 -lg 1 -lc 2 --dump-resolved --explain)
 )
 
 (executable

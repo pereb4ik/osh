@@ -3,6 +3,11 @@
 
   exception Error of string
 
+  (* Extra get *)
+  let eget (a, _) = match a with
+  | Some(s) -> s
+  | None -> ""
+
 }
 
 let allowd_cmd = ['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '\'' '\"' '=' '.' '/']
@@ -14,6 +19,8 @@ rule line = parse
     (* To remove comments *)
 | (([^'\n''#']* as line) '#' [^'\n']* '\n')
     { Some (line ^ "\n"), true }
+| ([^'\n']* as ln)"\\\n"
+    { Some (ln ^ eget(line lexbuf)), true }
 | ([^'\n']* '\n') as line
     (* Normal case: one line, no eof. *)
     { Some line, true }
@@ -35,9 +42,15 @@ and token = parse
     { EOL }
 | '\''([^'\n']+ as it)'\''
     { ITEM (it) }
+| '\"'([^'\n']+ as it)'\"'
+    { ITEM (it) }
+| '$'(allowd_cmd+ as var)
+    { ITEM (Unix.getenv var) }
 | allowd_cmd+ as it
     { ITEM (it) }
 | ';'
     { DELIM }
+| '|'
+    { PIPE }
 | _
     { raise (Error (Printf.sprintf "At offset %d: unexpected character.\n" (Lexing.lexeme_start lexbuf))) }

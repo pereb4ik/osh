@@ -1,13 +1,21 @@
-let f (x,y) = 
-  match Unix.fork () with
-| 0 -> Unix.execvp x y
-| _ -> Unix.wait();; ()
+let eval l =
+  let open Unix in
+  let rec makechain chain ic =
+    let (fd_in, fd_out) = pipe () in
+    if stdin <> ic then dup2 ic stdin;
+    match chain with
+    | [(cmd, args)] -> execvp cmd args
+    | (cmd, args) :: t -> (match fork () with
+                    | 0 -> close fd_out; makechain t fd_in
+                    | _ -> close fd_in; dup2 fd_out stdout; execvp cmd args
+                    )
+    | [] -> ()
+  in makechain l stdin
 
 let process (line : string) =
   let linebuf = Lexing.from_string line in
   try
-    let _ = List.map f (Parser.main Lexer.token linebuf) in
-    Printf.printf "%!"
+    let _ = List.map eval (Parser.main Lexer.token linebuf) in ()
   with
   | Lexer.Error msg ->
       Printf.fprintf stderr "%s%!" msg

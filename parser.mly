@@ -3,13 +3,18 @@
 %token DELIM /* ; */
 %token PIPEIN
 %token PIPEOUT
+%token PIPE
 
-%start <(string * string array) list> main
+%start <(string * string array)list list> main
 
 %%
 
 main:
-| l = separated_list(DELIM, expr) EOL
+| l = separated_list(DELIM, chain) EOL
+    { l }
+
+chain:
+| l = separated_nonempty_list(PIPE, expr)
     { l }
 
 expr:
