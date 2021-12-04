@@ -10,8 +10,14 @@
 %%
 
 main:
-| l = separated_list(DELIM, chain) EOL
+| l = separated_list(DELIM, lopt(chain)) EOL
     { l }
+
+/* Copy-paste of loption, but inline*/
+%inline lopt(X):
+| { [] }
+| x = X
+    { x }
 
 chain:
 | l = separated_nonempty_list(PIPE, expr)
