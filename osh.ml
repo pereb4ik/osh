@@ -1,15 +1,20 @@
 let eval l =
   let open Unix in
   let rec makechain chain ic =
+    let open Unix in
     let (fd_in, fd_out) = pipe () in
-    if stdin <> ic then dup2 ic stdin;
-    match chain with
-    | [(cmd, args)] -> execvp cmd args
-    | (cmd, args) :: t -> (match fork () with
-                    | 0 -> close fd_out; makechain t fd_in
-                    | _ -> close fd_in; dup2 fd_out stdout; execvp cmd args
-                    )
-    | [] -> ()
+    match fork () with
+    | 0 ->  if stdin <> ic then
+              dup2 ic stdin;
+            close fd_in;
+            (match chain with
+            | [(cmd, args)] -> execvp cmd args
+            | (cmd, args) :: _ -> dup2 fd_out stdout; execvp cmd args
+            | [] -> ()) 
+    | _ -> close fd_out;
+            let ll = List.tl chain in 
+            if ll <> [] then
+              makechain ll fd_in
   in makechain l stdin
 
 let process (line : string) =
