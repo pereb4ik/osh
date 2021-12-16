@@ -1,17 +1,13 @@
 {
   open Parser
+  open Utils
 
   exception Error of string
-
-  (* Extra get *)
-  let eget (a, _) = match a with
-  | Some(s) -> s
-  | None -> ""
 
 }
 
 let allowd_cmd = ['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '\'' '\"' '=' '.' '/']
-let allowd_var = ['A'-'Z' 'a'-'z' '0'-'9' '_']
+let allowd_var = ['A'-'Z' 'a'-'z' '0'-'9' '_' '-']
 
 (* This rule looks for a single line, terminated with '\n' or eof.
    It returns a pair of an optional string (the line that was found)
@@ -47,6 +43,8 @@ and token = parse
     { ITEM (it) }
 | '$'(allowd_cmd+ as var)
     { ITEM (Unix.getenv var) }
+| '~'(allowd_cmd* as var)
+    { ITEM (tilde ~name:var ()) }
 | (allowd_var+ as name)'='(allowd_var+ as value)
     { Unix.putenv name value; DELIM }
 | allowd_cmd+ as it

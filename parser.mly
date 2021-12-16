@@ -10,11 +10,11 @@
 %%
 
 main:
-| l = separated_list(DELIM, lopt(chain)) EOL
+| l = separated_list(DELIM, iloption(chain)) EOL
     { l }
 
 /* Copy-paste of loption, but inline*/
-%inline lopt(X):
+%inline iloption(X):
 | { [] }
 | x = X
     { x }
