@@ -1,2 +1,2 @@
 # OSH
-Specific and limited unix shell writed on OCaml
+Specific and limited unix shell written in OCaml
